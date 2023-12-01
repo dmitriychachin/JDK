@@ -4,6 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.*;
 
 /*
 Создать окно клиента чата. Окно должно содержать JtextField для ввода логина, пароля,
@@ -33,7 +39,13 @@ public class Chat extends JFrame{
     String password;
     String IP;
     String message;
-    Chat(){
+
+        // Create new file
+        String path="file1.txt";
+        InputStream input = new FileInputStream(path);
+        OutputStream output = new FileOutputStream(path);
+
+    Chat() throws IOException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocation(WINDOW_POSX, WINDOW_POSY);
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -49,22 +61,55 @@ public class Chat extends JFrame{
         panClient.add(areaMessage);
         panClient.add(txtFieldMessage);
         panClient.add(btnSend);
-
         btnSend.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 message = txtFieldLogin.getText() + ": " + txtFieldMessage.getText() + "\n";
                 areaMessage.append(message);
                 System.out.println("Отправлено сообщение: " + message);
+                try {
+                    output.write(message.getBytes());
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
+
+        btnSend.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode()==KeyEvent.VK_ENTER){
+                    message = txtFieldLogin.getText() + ": " + txtFieldMessage.getText() + "\n";
+                    areaMessage.append(message);
+                    System.out.println("Отправлено сообщение: " + message);
+                    try {
+                        output.write(message.getBytes());
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+
+        areaMessage.append(String.valueOf(input.read(path.getBytes())));
+
         setLayout(new GridLayout(2,1));
         add(panServer);
         add(panClient);
         setVisible(true);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         new Chat();
     }
 }
